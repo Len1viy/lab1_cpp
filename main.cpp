@@ -1,6 +1,6 @@
 #include <iostream>
 
 int main() {
-    std::cout << "HI" << std::endl;
+    std::cout << "HI2" << std::endl;
     return 0;
 }
