@@ -1,12 +1,8 @@
 namespace Input {
-    struct Line {
-        int m;
-        double *array;
-    };
-
     struct Matrix {
         int n;
-        Line *lines;
+        int m;
+        double **array;
     };
 
 

@@ -10,22 +10,22 @@ namespace Input {
 
     void deleteMatrix(Matrix &matrix) {
         for (int i = 0; i < matrix.n; i++) {
-            delete matrix.lines[i].array;
+            delete matrix.array[i];
         }
-        delete matrix.lines;
+        delete matrix.array;
     }
 
     int input(Matrix &matrix) {
         std::cout << "Input lines >>> ";
         getNum(matrix.n);
-        matrix.lines = new Line[matrix.n];
+        matrix.array = new double*[matrix.n];
+        std::cout << "Input columns >>> ";
+        getNum(matrix.m);
         for (int i = 0; i < matrix.n; i++) {
-            std::cout << "Input columns for line number " << i << " >>> ";
-            getNum(matrix.lines[i].m);
-            matrix.lines[i].array = new double[matrix.lines[i].m];
-            for (int j = 0; j < matrix.lines[i].m; j++) {
+            matrix.array[i] = new double[matrix.m];
+            for (int j = 0; j < matrix.m; j++) {
                 std::cout << "Input matrix[" << i << "][" << j << "]";
-                getNum(matrix.lines[i].array[j]);
+                getNum(matrix.array[i][j]);
             }
         }
         return 0;
@@ -48,10 +48,9 @@ namespace Input {
         }
         for (int i = 1; i < matrix->n + 1; i++) {
             sum = 0;
-            len = min(matrix->lines[(i - 1) % matrix->n].m, matrix->lines[i % matrix->n].m);
-            for (int j = 0; j < len; j++) {
-                if (matrix->lines[(i - 1) % matrix->n].array[j] < matrix->lines[i % matrix->n].array[j]) {
-                    sum += matrix->lines[i % matrix->n].array[j];
+            for (int j = 0; j < matrix->m; j++) {
+                if (matrix->array[(i - 1) % matrix->n][j] < matrix->array[i % matrix->n][j]) {
+                    sum += matrix->array[i % matrix->n][j];
                 }
             }
             answer[i % matrix->n] = sum;
@@ -77,9 +76,9 @@ namespace Input {
         std::cout << "MATRIX: " << std::endl;
         for (int i = 0; i < matrix.n; i++) {
             std::cout << "[";
-            for (int j = 0; j < matrix.lines[i].m; j++) {
-                if (j != matrix.lines[i].m - 1) std::cout << matrix.lines[i].array[j] << ", ";
-                else std::cout << matrix.lines[i].array[j];
+            for (int j = 0; j < matrix.m; j++) {
+                if (j != matrix.m - 1) std::cout << matrix.array[i][j] << ", ";
+                else std::cout << matrix.array[i][j];
             }
             std::cout << "]\n";
         }
