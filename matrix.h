@@ -2,7 +2,10 @@ namespace Input {
     struct Matrix {
         int n;
         int m;
-        double **array;
+        int countOfValues;
+        int *rowIndexes;
+        int *columnIndexes;
+        double *values;
     };
 
 
@@ -21,9 +24,11 @@ namespace Input {
 
     void help();
     int input(Matrix &matrix);
+    void getCounts(int &cnt, int minCorner, int maxCorner);
     void showMatrix(Matrix matrix);
     double *individualTask(Matrix *matrix);
     void showAnswer(double *ans, int n);
     void deleteMatrix(Matrix &matrix);
+    void createNewArray(int **array, int size);
 }
 
