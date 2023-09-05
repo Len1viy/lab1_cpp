@@ -22,6 +22,25 @@ namespace Input {
         else return b;
     }
 
+    template<class T>
+    void createNewArray(T **array, int size) {
+        *array = new T[size];
+        for (int i = 0; i < size; i++) {
+            (*array)[i] = 0;
+        }
+    }
+
+    template<class T>
+    void showArray(T *arr, int size) {
+        if (size == 0) return;
+        std::cout << "[";
+        for (int i = 0; i < size; i++) {
+            if (i != size - 1) {
+                std::cout << arr[i] << ", ";
+            } else std::cout << arr[i] << "]" << std::endl;
+        }
+    }
+
     void help();
     int input(Matrix &matrix);
     void getCounts(int &cnt, int minCorner, int maxCorner);
@@ -29,6 +48,5 @@ namespace Input {
     double *individualTask(Matrix *matrix);
     void showAnswer(double *ans, int n);
     void deleteMatrix(Matrix &matrix);
-    void createNewArray(int **array, int size);
 }
 

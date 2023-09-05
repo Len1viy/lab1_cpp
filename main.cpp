@@ -16,7 +16,8 @@ int main() {
         else if (command == 2) {
             showMatrix(matrix);
             double *answer = individualTask(&matrix);
-            showAnswer(answer, matrix.n);
+            std::cout << "ANSWER:" << std::endl;
+            showArray(answer, matrix.n);
             delete answer;
         } else if (command == 3) {
             showMatrix(matrix);
