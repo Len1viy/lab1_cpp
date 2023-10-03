@@ -4,64 +4,85 @@
 // Сделать проверку на ввод элемента в уже занятую ячейку
 
 namespace Input {
-    int getNum(int &a) {
-        std::cin >> a;
-        if (!std::cin.good()) return -1;
-        return 1;
-    }
 
     void deleteMatrix(Matrix &matrix) {
-        delete matrix.columnIndexes;
-        delete matrix.rowIndexes;
-        delete matrix.values;
+        delete[] matrix.rowIndexes;
+        delete[] matrix.values;
         matrix.n = 0;
         matrix.m = 0;
         matrix.countOfValues = 0;
+        matrix.values = nullptr;
+        matrix.rowIndexes = nullptr;
     }
 
 
-    void getCounts(int &cnt, int minCorner, int maxCorner) {
-        getNum(cnt);
-        while (cnt > maxCorner || cnt < minCorner) {
-            std::cout << "Try again >>>";
-            getNum(cnt);
+    int comp(const Values *a, const Values *b) {
+        return a->y - b->y;
+    }
+
+
+    int createRowIndexes(Matrix &matrix) {
+        int curElements = 0;
+        createNewArray(&matrix.rowIndexes, matrix.n + 1);
+        matrix.rowIndexes[0] = 0;
+        for (int i = 0; i < matrix.countOfValues; i++) {
+            curElements++;
+            for (int j = matrix.values[i].y + 1; j < matrix.n + 1; j++) {
+                matrix.rowIndexes[j] = curElements;
+            }
         }
+        return 1;
     }
 
     int input(Matrix &matrix) {
-        int count = 0;
-        int currentCount = 0;
-        std::cout << "Input lines >>> ";
-        getNum(matrix.n);
-        std::cout << "Input columns >>> ";
-        getNum(matrix.m);
-        std::cout << "Input count of not null elements in matrix >>> ";
-        getCounts(matrix.countOfValues, 0, matrix.m * matrix.n);
-        createNewArray(&matrix.values, count);
-        createNewArray(&matrix.columnIndexes, count);
-        createNewArray(&matrix.rowIndexes, matrix.n+1);
-        matrix.rowIndexes[0] = 0;
-        for (int i = 0; i < matrix.n; i++) {
-            if (matrix.countOfValues == currentCount) {
-                matrix.rowIndexes[i + 1] = currentCount;
-                continue;
+        try {
+            cout << "Input count of lines >>> ";
+            int check = getNum(matrix.n);
+            while (matrix.n <= 0 || check == 1) {
+                cout << "ERROR WITH COUNT OF ROWS" << endl;
+                cout << "Input count of lines >>> ";
+                getNum(matrix.n);
             }
-            std::cout << matrix.countOfValues - currentCount << " items left" << std::endl;
-            std::cout << "Input count of not null elements in line " << i << " >>> ";
-            getCounts(count, 0, matrix.countOfValues - currentCount);
-            currentCount += count;
-            matrix.rowIndexes[i + 1] = currentCount;
-            for (int j = 0; j < count; j++) {
-                std::cout << "Input index of value number " << j << " in line " << i << " >>> ";
-                getCounts(matrix.columnIndexes[currentCount - count + j], 0, matrix.m - 1);
-                std::cout << "Input element of [" << i << "]" << "[" << matrix.columnIndexes[currentCount - count + j]
-                          << "]";
-                getNum(matrix.values[currentCount - count + j]);
+            cout << "Input count of columns >>> ";
+            check = getNum(matrix.m);
+            while (matrix.m <= 0 || check == 1) {
+                cout << "ERROR WITH COUNT OF COLUMNS" << endl;
+                cout << "Input count of columns >>> ";
+                getNum(matrix.m);
             }
+            cout << "Input count of not null elements >>> ";
+            check = getNum(matrix.countOfValues);
+            while (matrix.countOfValues <= 0 || check == 1 || matrix.countOfValues > matrix.n * matrix.m) {
+                cout << "ERROR WITH COUNT" << endl;
+                cout << "Input count of not null elements >>> ";
+                check = getNum(matrix.countOfValues);
+            }
+            matrix.values = new Values[matrix.countOfValues];
+            for (int i = 0; i < matrix.countOfValues; i++) {
+                cout << "Input number of line and column for " << i + 1 << " value (line column) >>> ";
+                check = getTwoNum(matrix.values[i].y, matrix.values[i].x);
+                while (matrix.values[i].y < 0 || matrix.values[i].y >= matrix.n || matrix.values[i].x < 0 || matrix.values[i].x >= matrix.m || check == 1) {
+                    cout << "ERROR WUTH INDEXES" << endl;
+                    cout << "Input number of line and column for " << i + 1 << " value (line column) >>> ";
+                    check = getTwoNum(matrix.values[i].y, matrix.values[i].x);
+                }
+                cout << "Input value for element [" << matrix.values[i].y << "][" << matrix.values[i].x << "] >>> ";
+                check = getNum(matrix.values[i].value);
+                while (check == 1) {
+                    cout << "ERROR WITH VALUE" << endl;
+                    cout << "Input value for element [" << matrix.values[i].y << "][" << matrix.values[i].x << "] >>> ";
+                    check = getNum(matrix.values[i].value);
+                }
+            }
+            qsort(matrix.values, matrix.countOfValues, sizeof(Values),
+                  reinterpret_cast<int (*)(const void *,const void *)>(comp));
+            createRowIndexes(matrix);
+        } catch (...) {
+            throw;
         }
-
         return 0;
     }
+
 
     void help() {
         std::cout << "COMMANDS:" << std::endl << "0 - Exit programm;" << std::endl << "1 - Initial matrix;" << std::endl
@@ -69,34 +90,31 @@ namespace Input {
                   << std::endl;
     }
 
-    double *individualTask(Matrix *matrix) {
-        if (matrix->n == 0) {
+    double *individualTask(const Matrix &matrix) {
+        if (matrix.n == 0) {
             std::cout << "Matrix is free. Try to initial matrix and repeat this action." << std::endl;
             return nullptr;
         }
         double *answer;
-        createNewArray(&answer, matrix->n);
+        createNewArray(&answer, matrix.n);
         double sum;
-        int len, curCnt, prevCnt;
         double *curLine;
-        createNewArray(&curLine, matrix->n);
+        createNewArray(&curLine, matrix.m);
         double *prevLine;
-        createNewArray(&prevLine, matrix->n);
-        for (int i = 1; i < matrix->n + 1; i++) {
+        createNewArray(&prevLine, matrix.m);
+        for (int i = 1; i < matrix.n + 1; i++) {
             sum = 0;
-            int startInd = matrix->rowIndexes[i - 1];
-            int endInd = matrix->rowIndexes[i];
+            int startInd = matrix.rowIndexes[i - 1];
+            int endInd = matrix.rowIndexes[i];
             if (i == 1) {
-                prevCnt = endInd - startInd;
                 for (int j = startInd; j < endInd; j++) {
-                    prevLine[matrix->columnIndexes[j]] = matrix->values[j];
+                    prevLine[matrix.values[j].x] = matrix.values[j].value;
                 }
             } else {
-                curCnt = endInd - startInd;
                 for (int j = startInd; j < endInd; j++) {
-                    curLine[matrix->columnIndexes[j]] = matrix->values[j];
+                    curLine[matrix.values[j].x] = matrix.values[j].value;
                 }
-                for (int j = 0; j < matrix->m; j++) {
+                for (int j = 0; j < matrix.m; j++) {
                     if (curLine[j] > prevLine[j] && curLine[j] != 0) {
                         sum += curLine[j];
                     }
@@ -107,60 +125,47 @@ namespace Input {
             }
         }
         sum = 0;
-        for (int j = 0; j < matrix->rowIndexes[1]; j++) {
-            curLine[matrix->columnIndexes[j]] = matrix->values[j];
+        for (int j = 0; j < matrix.rowIndexes[1]; j++) {
+            curLine[matrix.values[j].x] = matrix.values[j].value;
         }
-        for (int j = 0; j < matrix->m; j++) {
+        for (int j = 0; j < matrix.m; j++) {
             if (curLine[j] > prevLine[j] && curLine[j] != 0) {
                 sum += curLine[j];
             }
         }
         answer[0] = sum;
+        delete[] curLine;
+        delete[] prevLine;
         return answer;
-//        if (matrix->n == 0) {
-//            std::cout << "Matrix is free. Try to initial matrix and repeat this action." << std::endl;
-//            return nullptr;
-//        }
-//        double *answer = new double[matrix->n];
-//        double sum;
-//        int len;
-//        for (int i = 0; i < matrix->n; i++) {
-//            answer[i] = 0;
-//        }
-//        for (int i = 1; i < matrix->n + 1; i++) {
-//            sum = 0;
-//            for (int j = 0; j < matrix->m; j++) {
-//                if (matrix->array[(i - 1) % matrix->n][j] < matrix->array[i % matrix->n][j]) {
-//                    sum += matrix->array[i % matrix->n][j];
-//                }
-//            }
-//            answer[i % matrix->n] = sum;
-//        }
-//        return answer;
     }
 
 
-    void showMatrix(Matrix matrix) {
+
+    void showMatrix(const Matrix &matrix) {
         if (matrix.n == 0 || matrix.m == 0) {
             std::cout << "Matrix is free. Try to initial matrix and repeat this action." << std::endl;
             return;
         }
         std::cout << "MATRIX: " << std::endl;
-        int *array;
-        createNewArray(&array, matrix.m);
-        for (int i = 0; i < matrix.n; i++) {
-            int startIndex = matrix.rowIndexes[i];
-            int endIndex = matrix.rowIndexes[i + 1];
-            for (int j = startIndex; j < endIndex; j++) {
-                array[matrix.columnIndexes[j]] = matrix.values[j];
-            }
-            std::cout << "[";
-            for (int element = 0; element < matrix.m; element++) {
-                if (element != matrix.m - 1) std::cout << array[element] << ", ";
-                else std::cout << array[element] << "]\n";
-                array[element] = 0;
-            }
+        double *array;
+        for (int i = 0; i < matrix.countOfValues; i++) {
+            cout << "[" << matrix.values[i].y << "][" << matrix.values[i].x << "] = " << matrix.values[i].value << endl;
         }
+//        createNewArray(&array, matrix.m);
+//        for (int i = 0; i < matrix.n; i++) {
+//            int startIndex = matrix.rowIndexes[i];
+//            int endIndex = matrix.rowIndexes[i + 1];
+//            for (int j = startIndex; j < endIndex; j++) {
+//                array[matrix.values[j].x] = matrix.values[j].value;
+//            }
+//            std::cout << "[";
+//            for (int element = 0; element < matrix.m; element++) {
+//                if (element != matrix.m - 1) std::cout << array[element] << ", ";
+//                else std::cout << array[element] << "]\n";
+//                array[element] = 0;
+//            }
+//        }
+//        delete[] array;
     }
 }
 

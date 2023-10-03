@@ -1,26 +1,45 @@
+#include <iostream>
+
+using namespace std;
+
 namespace Input {
+
+    struct Values {
+        int y;
+        int x;
+        double value;
+    };
+
     struct Matrix {
         int n;
         int m;
         int countOfValues;
         int *rowIndexes;
-        int *columnIndexes;
-        double *values;
+        Values *values;
     };
 
 
     template<class T>
     int getNum(T &a) {
-        std::cin >> a;
-        if (!std::cin.good()) return -1;
-        return 1;
+        if (cin >> a && cin.good()) return 0;
+        else {
+            cin.clear();
+            cin.sync();
+            return 1;
+        }
     }
 
     template<class T>
-    T min(T a, T b) {
-        if (a < b) return a;
-        else return b;
+    int getTwoNum(T &a, T &b) {
+        if (cin >> a >> b && cin.good()) return 0;
+        else {
+            cin.clear();
+            cin.sync();
+            return 1;
+        }
     }
+
+
 
     template<class T>
     void createNewArray(T **array, int size) {
@@ -31,22 +50,20 @@ namespace Input {
     }
 
     template<class T>
-    void showArray(T *arr, int size) {
+    void showArray(T &arr, int size) {
         if (size == 0) return;
-        std::cout << "[";
         for (int i = 0; i < size; i++) {
-            if (i != size - 1) {
-                std::cout << arr[i] << ", ";
-            } else std::cout << arr[i] << "]" << std::endl;
+            if (arr[i] != 0) {
+                cout << "[" << i << "] = " << arr[i] << endl;
+            }
         }
     }
 
+    int createRowIndexes(Matrix &matrix);
     void help();
     int input(Matrix &matrix);
-    void getCounts(int &cnt, int minCorner, int maxCorner);
-    void showMatrix(Matrix matrix);
-    double *individualTask(Matrix *matrix);
-    void showAnswer(double *ans, int n);
+    void showMatrix(const Matrix &matrix);
+    double *individualTask(const Matrix &matrix);
     void deleteMatrix(Matrix &matrix);
 }
 
